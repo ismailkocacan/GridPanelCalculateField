@@ -1,0 +1,99 @@
+﻿@model System.Collections.IEnumerable
+
+@using Ext.Net;
+@using Ext.Net.MVC;
+
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@(Html.X().ResourceManager()) 
+
+
+@(Html.X().GridPanel()
+        .Title("GridPanel Calculated Fields")
+        .Width(500)
+        .Frame(true)
+        .Store
+        (
+            Html.X().Store()
+                 .ID("Store1")
+                 .DataSource(Model)
+                .Model
+                (
+                    Html.X().Model()
+                    .Fields
+                    (
+                        new ModelField("Name", ModelFieldType.String),
+                        new ModelField("UnitPrice", ModelFieldType.Float),
+                        new ModelField("Amount", ModelFieldType.Float),
+                        new ModelField("Total", ModelFieldType.Float)
+                    )
+                )
+                .ServerProxy
+                (
+                    Html.X().AjaxProxy()
+                    .Url(Url.Action("GetData"))
+                )
+        )
+        .ColumnModel
+        (
+            Html.X().RowNumbererColumn().Width(50),
+
+            Html.X().Column()
+                .Text("Name")
+                .DataIndex("Name")
+                .Flex(1),
+
+            Html.X().Column()
+                .Text("UnitPrice")
+                .DataIndex("UnitPrice")
+                .Width(150)
+                .Editor
+                (
+                    Html.X().TextField()
+                     .MaskRe(@"/[0-9\$\.]/")
+                 )
+                .Align(Alignment.Right),
+
+
+            Html.X().Column()
+                .Text("Amount")
+                .DataIndex("Amount")
+                .Width(75)
+                .Align(Alignment.Right)
+                .Editor(Html.X().NumberField()),
+
+
+            Html.X().Column()
+                    .Text("Total")
+                    .DataIndex("Total")
+                    .Width(75)
+                    .Align(Alignment.Right)
+        )
+        .SelectionModel
+        (
+            Html.X().RowSelectionModel().Mode(SelectionMode.Single)
+        )
+        .Plugins
+        (
+             Html.X()
+             .CellEditing()
+             .ClicksToEdit(1)
+             .DirectEvents
+             (
+               de =>
+               {
+                   de.Edit.Url = Url.Action("CellEditing");
+                   de.Edit.ExtraParams.Add(new Parameter("id", "e.record.data.id", ParameterMode.Raw));
+                   de.Edit.ExtraParams.Add(new Parameter("field", "e.field", ParameterMode.Raw));
+                   de.Edit.ExtraParams.Add(new Parameter("oldValue", "e.originalValue", ParameterMode.Raw));
+                   de.Edit.ExtraParams.Add(new Parameter("newValue", "e.value", ParameterMode.Raw));
+                   de.Edit.ExtraParams.Add(new Parameter("vmStock", "e.record.data", ParameterMode.Raw));
+               }
+             )
+        )
+)
